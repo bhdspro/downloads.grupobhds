@@ -339,7 +339,7 @@
             if (stopChecking) return; 
             setLoading(true);
 
-            if (CONFIG.BACKEND_BASE_URL.includes('metalike-grupobhds') || isDemoEnvironment) {
+            if (CONFIG.BACKEND_BASE_URL.includes('mode-demo') || isDemoEnvironment) {
                 setTimeout(() => {
                     updateUI({
                         currentLikes: 15,
@@ -350,7 +350,7 @@
                         sponsors: [] 
                     });
                     
-                    if(CONFIG.BACKEND_BASE_URL.includes('metalike-grupobhds')) {
+                    if(CONFIG.BACKEND_BASE_URL.includes('mode-demo')) {
                         elStatusText.innerText = "⚠️ MODO DEMO: Backend não configurado.";
                     } else {
                         elStatusText.innerText = `⚠️ MODO DEMO: ID da campanha: ${CAMPAIGN_ID}`;
