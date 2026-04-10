@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Downloads - Grupo BHDS</title>
+    
+    <!-- Favicon de Raio ⚡ -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
+    <!-- Tailwind CSS para estilização rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgWhite: '#FFFFFF',
+                        cardDark: '#20192A',
+                        brandRed: '#FD0000',
+                        textLight: '#E2E8F0',
+                        textGray: '#94A3B8'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF;
+        }
+        
+        /* Animação suave para as etapas */
+        .step-card {
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            border-color: #FD0000;
+        }
+        
+        /* Efeito de brilho na cor de destaque */
+        .glow-red {
+            box-shadow: 0 0 15px rgba(253, 0, 0, 0.4);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
+        }
+
+        /* Animação para o acordeão */
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800 min-h-screen flex flex-col items-center py-10 px-4 sm:px-6 lg:px-8">
+
+    <!-- Campo oculto usado pela extensão para avisar que foi instalada -->
+    <input type="hidden" id="bhds-install-detector" value="waiting">
+
+    <!-- Card Central Escuro -->
+    <main class="w-full max-w-3xl bg-cardDark rounded-3xl shadow-2xl overflow-hidden border border-gray-800 mt-4">
+        
+        <!-- Topo do Card -->
+        <div class="p-8 md:p-10 border-b border-gray-700/50 text-center relative overflow-hidden">
+            <!-- Efeito visual de fundo no topo -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-brandRed shadow-[0_0_20px_#FD0000]"></div>
+            
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-3">
+                Como instalar a extensão <span class="text-brandRed">ID HOTMARKET</span>
+            </h2>
+            <p class="text-textGray text-base">
+                Não se preocupe se você não entende de tecnologia. Preparamos este guia visual para que qualquer pessoa consiga instalar com facilidade.
+            </p>
+        </div>
+
+        <!-- Passo a Passo -->
+        <div class="p-8 md:p-10 space-y-8 bg-cardDark">
+
+            <!-- Passo 1 -->
+            <div class="step-card bg-white/5 border border-white/10 rounded-2xl p-6 relative">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-brandRed rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg glow-red">1</div>
+                
+                <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    <div class="p-4 bg-brandRed/10 rounded-xl shrink-0">
+                        <i data-lucide="download" class="w-8 h-8 text-brandRed"></i>
+                    </div>
+                    <div class="w-full">
+                        <h3 class="text-xl font-bold text-white mb-2">Baixe e Extraia o Arquivo</h3>
+                        <p class="text-textLight leading-relaxed mb-4">
+                            Primeiro, clique no botão vermelho abaixo para baixar o arquivo.
+                        </p>
+                        
+                        <!-- Botão Automático de Download -->
+                        <a href="id_hotmarket.zip" download="id_hotmarket.zip" class="inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-brandRed text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-brandRed/30 mb-4">
+                            <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                            Baixar id_hotmarket.zip
+                        </a>
+
+                        <p class="text-textLight leading-relaxed">
+                            <span class="text-brandRed font-semibold inline-block">Atenção:</span> Após baixar, você precisa <strong>Extrair</strong> o arquivo. Se não extrair, não vai funcionar!
+                        </p>
+
+                        <!-- Acordeão Tutorial de Extração -->
+                        <div class="mt-4 border border-white/10 rounded-xl bg-black/20 overflow-hidden">
+                            <button onclick="toggleExtractTutorial()" class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/5 transition-colors focus:outline-none group">
+                                <span class="font-medium text-brandRed flex items-center gap-2 group-hover:text-red-400 transition-colors">
+                                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                                    Não sabe extrair? Clique aqui
+                                </span>
+                                <i data-lucide="chevron-down" id="extract-chevron" class="w-5 h-5 text-textGray transition-transform duration-300"></i>
+                            </button>
+                            
+                            <div id="extract-tutorial" class="accordion-content px-4 bg-black/40 border-t border-white/5">
+                                <div class="py-4 text-sm text-textLight space-y-4">
+                                    <p class="text-base text-white font-medium">O arquivo baixado vem compactado (com um desenho de zíper). Veja como abrir:</p>
+                                    
+                                    <!-- Windows (Mostrado apenas no Windows) -->
+                                    <div id="tutorial-win" class="bg-white/5 p-4 rounded-lg border border-white/10">
+                                        <p class="flex items-center gap-2 text-white font-bold mb-2">
+                                            <i data-lucide="monitor" class="w-4 h-4 text-brandRed"></i> 
+                                            Seu sistema: Windows
+                                        </p>
+                                        <ol class="list-decimal pl-5 space-y-2 text-textGray">
+                                            <li>Vá na sua pasta de <strong>Downloads</strong>.</li>
+                                            <li>Clique com o <strong>botão direito</strong> do mouse em cima do arquivo <em>id_hotmarket.zip</em>.</li>
+                                            <li>No menu que aparecer, clique na opção <strong>"Extrair Tudo..."</strong>.</li>
+                                            <li>Na janelinha que abrir, é só clicar no botão <strong>"Extrair"</strong> lá embaixo. Pronto! Ele criará uma pasta normal.</li>
+                                        </ol>
+                                    </div>
+
+                                    <!-- Mac (Mostrado apenas no Mac) -->
+                                    <div id="tutorial-mac" class="bg-white/5 p-4 rounded-lg border border-white/10">
+                                        <p class="flex items-center gap-2 text-white font-bold mb-2">
+                                            <i data-lucide="apple" class="w-4 h-4 text-brandRed"></i> 
+                                            Seu sistema: Mac (Apple)
+                                        </p>
+                                        <ol class="list-decimal pl-5 space-y-2 text-textGray">
+                                            <li>Vá na sua pasta de <strong>Downloads</strong>.</li>
+                                            <li>Apenas dê <strong>dois cliques rápidos</strong> no arquivo <em>id_hotmarket.zip</em>. Ele extrai sozinho na hora!</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 2 -->
+            <div class="step-card bg-white/5 border border-white/10 rounded-2xl p-6 relative">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-brandRed rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg glow-red">2</div>
+                
+                <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    <div class="p-4 bg-brandRed/10 rounded-xl shrink-0">
+                        <i data-lucide="puzzle" class="w-8 h-8 text-brandRed"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Abra a página de Extensões</h3>
+                        <p class="text-textLight leading-relaxed">
+                            No seu navegador <strong id="browser-name" class="text-white">Google Chrome</strong>, clique na barra de endereços (lá em cima onde você digita os sites), copie e cole este texto exato: 
+                            <br><br>
+                            
+                            <!-- Botão Dinâmico de Cópia -->
+                            <span id="copy-container" class="inline-flex items-center gap-2 bg-black/40 border border-white/20 px-4 py-2 rounded-lg text-brandRed font-mono font-bold select-all cursor-pointer hover:bg-black/60 transition-colors" onclick="copiarTextoURL()">
+                                <span id="copy-url-text">chrome://extensions/</span>
+                                <i data-lucide="copy" class="w-4 h-4 text-textGray"></i>
+                            </span>
+                            <br>
+                            <span class="text-xs text-textGray mt-1 block">(Clique no texto vermelho acima para copiar, cole no navegador e aperte Enter)</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 3 -->
+            <div id="step-3" class="step-card bg-white/5 border border-white/10 rounded-2xl p-6 relative">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-brandRed rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg glow-red">3</div>
+                
+                <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    <div class="p-4 bg-brandRed/10 rounded-xl shrink-0">
+                        <i data-lucide="toggle-right" class="w-8 h-8 text-brandRed"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Ative o Modo do Desenvolvedor</h3>
+                        <p class="text-textLight leading-relaxed">
+                            Na página que você acabou de abrir, olhe para o <strong>canto superior direito</strong> da sua tela. Você verá um botãozinho escrito <strong class="text-white">"Modo do desenvolvedor"</strong>. 
+                            <br><br>
+                            Clique na chavinha para ativá-lo (a bolinha vai para a direita e ficará azul).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 4 -->
+            <div id="step-4" class="step-card bg-white/5 border border-white/10 rounded-2xl p-6 relative">
+                <div class="absolute -top-4 -left-4 w-10 h-10 bg-brandRed rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg glow-red">4</div>
+                
+                <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    <div class="p-4 bg-brandRed/10 rounded-xl shrink-0">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-brandRed"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">Carregue a Extensão</h3>
+                        <p class="text-textLight leading-relaxed">
+                            Agora que você ativou o modo desenvolvedor, aparecerão três novos botões no topo da tela, do lado esquerdo. 
+                            <br><br>
+                            Clique no botão chamado <strong class="text-brandRed bg-brandRed/10 px-2 py-1 rounded">"Carregar sem compactação"</strong>.
+                            <br><br>
+                            Uma janela vai abrir. Procure pela <strong>pasta</strong> da <span class="text-white">ID HOTMARKET</span> que você extraiu lá no Passo 1, clique nela apenas uma vez para selecioná-la e clique no botão "Selecionar Pasta".
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo Final - Radar de Aguardo (Exibido inicialmente) -->
+            <div id="final-step-waiting" class="border-2 border-yellow-500 bg-yellow-500/10 rounded-2xl p-6 relative mt-10 text-center transition-all duration-500">
+                <div class="flex justify-center mb-4">
+                    <div class="p-4 bg-yellow-500 rounded-full shadow-lg glow-yellow text-white animate-pulse">
+                        <i data-lucide="loader-2" class="w-10 h-10 animate-spin"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Aguardando Instalação...</h3>
+                <p class="text-textLight leading-relaxed max-w-xl mx-auto">
+                    Assim que você carregar a pasta no navegador (Passo 4), esta página ficará <strong class="text-green-400">verde</strong> automaticamente. Mantenha esta página aberta!
+                </p>
+                
+                <!-- Botão de emergência caso a pessoa baixe a página localmente e o Chrome bloqueie a detecção -->
+                <button onclick="forceSuccess()" class="mt-4 text-sm text-textGray underline hover:text-white transition-colors">
+                    Já carreguei a pasta mas esta tela não mudou
+                </button>
+            </div>
+
+            <!-- Passo Final - Sucesso (Oculto inicialmente) -->
+            <div id="final-step-success" class="hidden border-2 border-green-500 bg-green-500/10 rounded-2xl p-6 relative mt-10 text-center transition-all duration-500">
+                <div class="flex justify-center mb-4">
+                    <div class="p-4 bg-green-500 rounded-full shadow-lg glow-green text-white">
+                        <i data-lucide="check-circle" class="w-10 h-10"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Extensão Instalada com Sucesso! 🎉</h3>
+                <p class="text-textLight leading-relaxed max-w-xl mx-auto">
+                    A extensão <strong>ID HOTMARKET</strong> já foi detectada e está funcionando perfeitamente.
+                    <br><br>
+                    Sempre que você acessar a página de um produto na Hotmart, você poderá copiar o ID rapidamente de duas formas: clicando no ícone 🆔 que aparecerá na tela, <strong>ou simplesmente clicando no ícone da nossa extensão na barra superior do navegador</strong>.
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="mt-12 text-center text-gray-500 text-sm pb-8">
+        <p>&copy; 2026 Grupo BHDS. Todos os direitos reservados.</p>
+        <p class="mt-1">Página de auxílio para instalação local (Modo Desenvolvedor).</p>
+    </footer>
+
+    <!-- Scripts de Lógica da Página -->
+    <script>
+        let dynamicExtensionUrl = "chrome://extensions/";
+
+        // Lógica: Mostra tutorial apenas do Sistema Operacional do usuário
+        function setupOSSpecifics() {
+            const isMac = navigator.userAgent.toLowerCase().includes('mac');
+            const winDiv = document.getElementById('tutorial-win');
+            const macDiv = document.getElementById('tutorial-mac');
+            
+            if (isMac) {
+                if(winDiv) winDiv.style.display = 'none';
+            } else {
+                if(macDiv) macDiv.style.display = 'none';
+            }
+        }
+
+        function toggleExtractTutorial() {
+            const content = document.getElementById('extract-tutorial');
+            const chevron = document.getElementById('extract-chevron');
+            content.classList.toggle('open');
+            chevron.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        async function setupBrowserSpecifics() {
+            let browserName = "Google Chrome";
+            const ua = navigator.userAgent;
+            
+            if (navigator.brave && await navigator.brave.isBrave()) {
+                browserName = "Brave";
+                dynamicExtensionUrl = "brave://extensions/";
+            } else if (ua.includes("Edg")) {
+                browserName = "Microsoft Edge";
+                dynamicExtensionUrl = "edge://extensions/";
+            } else if (ua.includes("OPR") || ua.includes("Opera")) {
+                browserName = "Opera";
+                dynamicExtensionUrl = "opera://extensions/";
+            } else if (ua.includes("Firefox")) {
+                browserName = "Mozilla Firefox";
+                dynamicExtensionUrl = "about:debugging#/runtime/this-firefox";
+            }
+
+            document.getElementById('browser-name').innerText = browserName;
+            document.getElementById('copy-url-text').innerText = dynamicExtensionUrl;
+            lucide.createIcons();
+        }
+
+        function copiarTextoURL() {
+            const container = document.getElementById('copy-container');
+            
+            try {
+                // Cria um elemento temporário para copiar usando execCommand
+                const tempElement = document.createElement('textarea');
+                tempElement.value = dynamicExtensionUrl;
+                document.body.appendChild(tempElement);
+                tempElement.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempElement);
+                
+                const textoOriginalHTML = container.innerHTML;
+                container.innerHTML = `Copiado com sucesso! <i data-lucide="check" class="w-4 h-4 text-green-400"></i>`;
+                container.classList.add('border-green-500', 'text-green-400');
+                container.classList.remove('border-white/20', 'text-brandRed');
+                lucide.createIcons(); 
+                
+                setTimeout(() => {
+                    container.innerHTML = `<span id="copy-url-text">${dynamicExtensionUrl}</span> <i data-lucide="copy" class="w-4 h-4 text-textGray"></i>`;
+                    container.classList.remove('border-green-500', 'text-green-400');
+                    container.classList.add('border-white/20', 'text-brandRed');
+                    lucide.createIcons();
+                }, 2000);
+            } catch(err) {
+                console.error('Erro ao copiar: ', err);
+                alert("Copie manualmente: " + dynamicExtensionUrl);
+            }
+        }
+
+        // Lógica: Transforma a tela em Verde caso a extensão seja detectada
+        function forceSuccess() {
+            document.getElementById('final-step-waiting').classList.add('hidden');
+            document.getElementById('final-step-success').classList.remove('hidden');
+        }
+
+        // Lógica: Fica vigiando o campo escondido para ver se a extensão foi ativada
+        setInterval(() => {
+            const detector = document.getElementById('bhds-install-detector');
+            if (detector && detector.value === 'installed') {
+                forceSuccess();
+                // Reseta o valor para não ficar rodando a função atoa
+                detector.value = 'done';
+            }
+        }, 1000);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupOSSpecifics();
+            setupBrowserSpecifics();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
