@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Downloads - Grupo BHDS</title>
+    <title>Meta de Likes - Libertação de Download</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <!-- Biblioteca leve de Confetes -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -29,7 +28,6 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* Animação de Pulsar Suave e Atrativa */
         @keyframes pulse-soft {
             0% { transform: scale(1); box-shadow: 0 4px 14px rgba(253, 0, 0, 0.4); }
             50% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(253, 0, 0, 0.6); }
@@ -67,7 +65,6 @@
                 
                 <div class="w-full h-4 bg-gray-700 rounded-full overflow-hidden relative">
                     <div id="progressBar" class="h-full bg-[#FD0000] rounded-full progress-transition relative" style="width: 0%;">
-                        <!-- Efeito de brilho na barra de progresso -->
                         <div class="absolute top-0 right-0 bottom-0 w-10 bg-white opacity-20" style="filter: blur(4px);"></div>
                     </div>
                 </div>
@@ -77,12 +74,10 @@
             </div>
 
             <div class="w-full flex flex-col gap-4">
-                <!-- Botão Dinâmico -->
                 <a id="btnAction" href="#" target="_blank" class="w-full h-14 bg-[#FD0000] text-white font-bold rounded-full flex items-center justify-center transition-all duration-300 shadow-lg text-lg hidden">
-                    Contribuir com a Meta de Likes
+                    Ir para a Live e Deixar o Like
                 </a>
                 
-                <!-- Mantive o botão manual como redundância (fallback) caso o utilizador prefira clicar -->
                 <button id="btnCheckAgain" onclick="checkLikes()" class="w-full h-14 bg-transparent border-2 border-gray-600 hover:border-gray-400 text-white font-bold rounded-full flex items-center justify-center transition-colors text-lg">
                     Verificar Novamente
                 </button>
@@ -105,11 +100,10 @@
          */
         const CONFIG = {
             // URL base do seu servidor no Render (sem a barra no final)
-            // Substitua pelo seu link real do Render para funcionar em produção
-            BACKEND_BASE_URL: 'https://downloads.grupobhds.onrender.com', 
+            BACKEND_BASE_URL: 'https://seu-servidor-aqui.onrender.com', 
             
-            // A campanha que esta página HTML está a exibir.
-            CAMPAIGN_ID: '888' 
+            // O nome exato que você escreveu na COLUNA A do seu Google Sheets
+            CAMPAIGN_ID: 'video1' 
         };
 
         const elLikesCount = document.getElementById('likesCount');
@@ -123,21 +117,15 @@
         const topBorder = document.getElementById('topBorder');
         const mainIcon = document.getElementById('mainIcon');
 
-        let alreadyCelebrated = false; // Impede que os confetes repitam a cada verificação
+        let alreadyCelebrated = false;
 
         async function checkLikes() {
             setLoading(true);
 
-            // MODO DEMO: Impede o erro de "Failed to fetch" na visualização
-            if (CONFIG.BACKEND_BASE_URL.includes('localhost') || CONFIG.BACKEND_BASE_URL.includes('seu-servidor')) {
+            // MODO DEMO: Se não estiver configurado, não quebra a tela
+            if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui')) {
                 setTimeout(() => {
-                    updateUI({
-                        currentLikes: 15, // Altere para 25 no código para testar o sucesso visualmente
-                        targetLikes: 25,
-                        goalReached: false,
-                        liveUrl: "https://www.youtube.com/"
-                    });
-                    elStatusText.innerText = "⚠️ MODO DEMO: Backend não conectado. Configure o BACKEND_BASE_URL.";
+                    elStatusText.innerText = "⚠️ MODO DEMO: Configure a URL do seu backend na linha 116 do HTML.";
                     elStatusText.classList.add("text-[#FD0000]");
                     setLoading(false);
                 }, 800);
@@ -180,7 +168,6 @@
             elProgressBar.style.width = `${percentage}%`;
 
             if (goalReached) {
-                // Confetes (Apenas na primeira vez que atinge 100%)
                 if (!alreadyCelebrated) {
                     dispararConfetes();
                     alreadyCelebrated = true;
@@ -190,26 +177,19 @@
                 elStatusText.classList.remove("text-[#FD0000]");
                 elMissingText.innerText = "Acesso libertado! Clique no botão abaixo.";
                 
-                // Alteração de Cores para Sucesso (Verde)
                 elProgressBar.classList.replace("bg-[#FD0000]", "bg-green-500");
                 elLikesCount.classList.replace("text-[#FD0000]", "text-green-500");
                 topBorder.classList.replace("bg-[#FD0000]", "bg-green-500");
-                mainIcon.setAttribute("stroke", "#22c55e"); // Verde do Tailwind
-                
-                // Muda o ícone para um Check
+                mainIcon.setAttribute("stroke", "#22c55e");
                 mainIcon.innerHTML = `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>`;
                 
                 btnCheckAgain.classList.add("hidden");
-                
-                // Transforma o botão para a ROTA SEGURA DO BACKEND
                 btnAction.classList.remove("hidden");
                 btnAction.innerText = "Aceder ao Download";
-                
-                // Remove o efeito de pulsar e aplica cores de sucesso
                 btnAction.classList.remove("animate-pulse-btn", "bg-[#FD0000]", "hover:bg-[#d40000]");
                 btnAction.classList.add("bg-green-500", "hover:bg-green-600", "hover:scale-105");
                 
-                // O botão agora manda o navegador para a rota de Redirecionamento 302 do backend
+                // Redirecionamento HTTP 302 direto no backend
                 btnAction.href = `${CONFIG.BACKEND_BASE_URL}/api/download/${CONFIG.CAMPAIGN_ID}`;
                 btnAction.target = "_self";
 
@@ -219,39 +199,22 @@
                 elStatusText.classList.remove("text-[#FD0000]");
                 elMissingText.innerText = `Falta${missing > 1 ? 'm' : ''} ${missing} like${missing > 1 ? 's' : ''} para libertar o conteúdo.`;
                 
-                // Configura o botão para ir para o YouTube com o Pulsar
                 btnAction.classList.remove("hidden");
                 btnAction.classList.add("animate-pulse-btn");
-                btnAction.innerText = "Contribuir com a Meta de Likes";
+                btnAction.innerText = "Ir para a Live e Deixar o Like";
                 btnAction.href = liveUrl;
                 btnAction.target = "_blank";
             }
         }
 
-        // Função para disparar a chuva de confetes
         function dispararConfetes() {
             var duration = 3000;
             var end = Date.now() + duration;
 
             (function frame() {
-                confetti({
-                    particleCount: 5,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: ['#FD0000', '#ffffff', '#20192A']
-                });
-                confetti({
-                    particleCount: 5,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: ['#FD0000', '#ffffff', '#20192A']
-                });
-
-                if (Date.now() < end) {
-                    requestAnimationFrame(frame);
-                }
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FD0000', '#ffffff', '#20192A'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FD0000', '#ffffff', '#20192A'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
             }());
         }
 
@@ -267,32 +230,15 @@
             }
         }
 
-        /**
-         * ==========================================
-         * PAGE VISIBILITY API (Alternativa Inteligente)
-         * ==========================================
-         * Deteta exatamente quando o utilizador volta do separador do YouTube
-         * para a página, e força uma atualização automática sem esgotar o servidor.
-         */
+        // Page Visibility API
         document.addEventListener("visibilitychange", () => {
-            // "visible" significa que o utilizador acabou de voltar para o separador deste site
             if (document.visibilityState === "visible") {
-                console.log("O utilizador voltou à página. A verificar likes novamente...");
-                
-                // Oculta textos e exibe o sinal de loading visualmente enquanto aguarda
                 elStatusText.innerText = "A atualizar verificação de likes...";
-                
-                // Um delay de 1.5s é dado para os servidores do YouTube 
-                // terem tempo hábil de contabilizar o like recém-dado.
-                setTimeout(() => {
-                    checkLikes();
-                }, 1500); 
+                setTimeout(checkLikes, 1500); 
             }
         });
 
-        // Carrega pela primeira vez
         window.onload = checkLikes;
-
     </script>
 </body>
 </html>
