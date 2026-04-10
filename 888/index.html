@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="unsafe-url">
     <title>Página de Downloads - Grupo BHDS</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -11,11 +15,11 @@
     <style>
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #FFFFFF;
+            background-color: #F8F9FA;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
@@ -25,7 +29,7 @@
         }
 
         .m3-shadow {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         @keyframes pulse-soft {
@@ -37,49 +41,83 @@
         .animate-pulse-btn {
             animation: pulse-soft 2s infinite ease-in-out;
         }
+
+        @keyframes shimmer {
+            0% { transform: translate3d(-100%, 0, 0) skewX(-20deg); }
+            50%, 100% { transform: translate3d(200%, 0, 0) skewX(-20deg); } 
+        }
+        .shine-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        .shine-effect::after {
+            content: '';
+            position: absolute;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: linear-gradient(to right, transparent 0%, rgba(255, 223, 0, 0.3) 50%, transparent 100%);
+            animation: shimmer 4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* Previne cortes e garante proporção 1:1 exata na imagem do patrocinador */
+        .sponsor-image-box {
+            width: 100%;
+            max-width: 240px; /* Limite seguro para mobile e desktop */
+            aspect-ratio: 1 / 1;
+            margin: 0 auto 16px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
-<body>
+<body class="py-6 sm:py-10">
 
-    <main class="w-full max-w-md p-6">
-        <div class="bg-[#20192A] text-white rounded-[32px] p-8 m3-shadow flex flex-col items-center text-center relative overflow-hidden">
+    <main class="w-full max-w-md px-4 sm:px-6 flex flex-col items-center">
+        <!-- CARD PRINCIPAL -->
+        <div class="w-full bg-[#20192A] text-white rounded-[32px] p-6 sm:p-8 m3-shadow flex flex-col items-center text-center relative overflow-hidden z-20">
             
             <div class="absolute top-0 left-0 w-full h-2 bg-[#FD0000]" id="topBorder"></div>
 
-            <div class="mb-6 mt-2" id="iconContainer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FD0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="mainIcon">
+            <div class="mb-4 mt-2" id="iconContainer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FD0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="mainIcon">
                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                 </svg>
             </div>
 
-            <h1 class="text-3xl font-bold mb-2" id="mainTitle">Meta de Likes</h1>
-            <p class="text-gray-300 text-base mb-8 px-2" id="statusText">
-                A carregar informações da live...
+            <h1 class="text-2xl sm:text-3xl font-extrabold mb-1" id="mainTitle">Meta de Likes</h1>
+            <p class="text-gray-300 text-xs sm:text-sm mb-6 sm:mb-8 px-2" id="statusText">
+                Buscando os likes ao vivo...
             </p>
 
             <div class="w-full mb-8">
-                <div class="flex justify-between items-end mb-3">
-                    <span class="text-4xl font-extrabold text-[#FD0000]" id="likesCount">-</span>
-                    <span class="text-lg text-gray-400 font-medium">/ <span id="targetCount">-</span> likes</span>
+                <div class="flex justify-between items-end mb-2 sm:mb-3">
+                    <span class="text-4xl sm:text-5xl font-black text-[#FD0000]" id="likesCount">-</span>
+                    <span class="text-base sm:text-lg text-gray-400 font-medium">/ <span id="targetCount">-</span> likes</span>
                 </div>
                 
-                <div class="w-full h-4 bg-gray-700 rounded-full overflow-hidden relative">
+                <div class="w-full h-4 bg-gray-700/60 rounded-full overflow-hidden relative">
                     <div id="progressBar" class="h-full bg-[#FD0000] rounded-full progress-transition relative" style="width: 0%;">
-                        <div class="absolute top-0 right-0 bottom-0 w-10 bg-white opacity-20" style="filter: blur(4px);"></div>
+                        <div class="absolute top-0 right-0 bottom-0 w-10 bg-white opacity-25" style="filter: blur(4px);"></div>
                     </div>
                 </div>
-                <p class="text-sm text-gray-400 mt-3 font-medium text-left" id="missingText">
-                    A verificar a meta...
+                <!-- TEXTO CENTRALIZADO AQUI -->
+                <p class="text-xs sm:text-sm text-gray-400 mt-3 font-medium text-center" id="missingText">
+                    Verificando...
                 </p>
             </div>
 
-            <div class="w-full flex flex-col gap-4">
-                <a id="btnAction" href="#" target="_blank" class="w-full h-14 bg-[#FD0000] text-white font-bold rounded-full flex items-center justify-center transition-all duration-300 shadow-lg text-lg hidden">
+            <div class="w-full flex flex-col gap-3">
+                <button id="btnAction" class="w-full h-12 sm:h-14 bg-[#FD0000] text-white font-bold rounded-full flex items-center justify-center transition-all duration-300 shadow-lg text-base sm:text-lg hidden">
                     Contribuir com o MetaLike
-                </a>
+                </button>
                 
-                <button id="btnCheckAgain" onclick="checkLikes()" class="w-full h-14 bg-transparent border-2 border-gray-600 hover:border-gray-400 text-white font-bold rounded-full flex items-center justify-center transition-colors text-lg">
-                    Verificar Novamente
+                <button id="btnCheckAgain" onclick="handleManualCheck()" class="w-full h-12 sm:h-14 bg-transparent border-2 border-gray-600 hover:border-gray-400 text-white font-bold rounded-full flex items-center justify-center transition-colors text-base sm:text-lg hidden">
+                    Verificar de novo
                 </button>
             </div>
 
@@ -90,25 +128,40 @@
                 </svg>
             </div>
         </div>
+
+        <!-- ESPAÇO DO PATROCINADOR -->
+        <div id="sponsorWrapper" class="mt-8 w-full relative">
+            
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FD0000] text-white text-[10px] sm:text-xs font-black px-4 py-1 rounded-full uppercase tracking-widest z-30 shadow-md border-2 border-white">
+                Patrocinador
+            </div>
+
+            <div id="sponsorBox" class="w-full bg-white border-2 border-[#FD0000]/20 rounded-[28px] p-5 sm:p-6 text-center relative overflow-hidden transition-all duration-300 hover:border-[#FD0000]/50 hover:shadow-xl cursor-pointer shine-effect z-10 pt-8 sm:pt-8">
+                
+                <div id="sponsorContent" class="relative z-20 flex flex-col items-center">
+                    <!-- O conteúdo do patrocinador será renderizado aqui -->
+                    <h3 class="text-[#20192A] font-extrabold text-lg sm:text-xl mb-2 leading-tight">Destaque sua marca aqui</h3>
+                    
+                    <p class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed px-2">
+                        Anuncie sua marca, produto ou serviço neste espaço. Apoie nosso conteúdo e seja o Patrocinador Oficial desta página por apenas <span class="font-black text-green-600 text-sm sm:text-base whitespace-nowrap">R$10</span>.
+                    </p>
+                    
+                    <button class="w-full bg-[#20192A] text-white text-base sm:text-lg font-bold py-3 sm:py-3.5 px-6 rounded-full mt-2">
+                        Quero ser patrocinador
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
-        /**
-         * ==========================================
-         * CONFIGURAÇÃO DA CAMPANHA NO FRONTEND
-         * ==========================================
-         */
         const CONFIG = {
-            // URL base do seu servidor no Render (sem a barra no final)
-            // É a ÚNICA coisa que você precisará configurar no Frontend futuramente.
-            BACKEND_BASE_URL: 'https://downloads-grupobhds.onrender.com' 
+            BACKEND_BASE_URL: 'https://metalike-grupobhds.onrender.com' 
         };
 
-        // Extrai automaticamente o ID da campanha pela URL (Ex: .../888 -> '888')
         let CAMPAIGN_ID = window.location.pathname.split('/').filter(Boolean).pop();
 
-        // Se o host for o sandbox do Canvas, ou localhost, ou a URL estiver vazia na raiz,
-        // geramos um ID de demonstração automaticamente sem precisar preencher nada.
         const isDemoEnvironment = window.location.hostname.includes('usercontent.goog') || 
                                   window.location.hostname === 'localhost' || 
                                   !CAMPAIGN_ID || 
@@ -128,30 +181,184 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         const topBorder = document.getElementById('topBorder');
         const mainIcon = document.getElementById('mainIcon');
+        const sponsorBox = document.getElementById('sponsorBox');
+        const sponsorContent = document.getElementById('sponsorContent');
+        const sponsorWrapper = document.getElementById('sponsorWrapper');
 
         let alreadyCelebrated = false;
+        let stopChecking = false; 
+
+        let manualChecksCounter = 0;
+        const MAX_MANUAL_CHECKS = 3;
+
+        let liveUrlToOpen = "";
+        let downloadUrlToOpen = "";
+        
+        // ROTAÇÃO DE PATROCINADORES
+        let currentSponsorsList = [];
+        let activeSponsorIndex = -1;
+        let rotationInterval = null;
+        let currentSponsorName = "Padrão";
+        let sponsorUrlToOpen = "https://pagamento.grupobhds.com/metalike/patrocinador";
+        
+        let initialScrollDone = false; // Controle de Scroll Inteligente
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if(sponsorWrapper) {
+                    sponsorWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 800);
+        });
+
+        btnAction.addEventListener("click", () => {
+            if (downloadUrlToOpen) {
+                window.location.href = downloadUrlToOpen;
+            } else if (liveUrlToOpen) {
+                window.open(liveUrlToOpen, "_blank");
+            }
+        });
+
+        // Função responsável por formatar a URL do patrocinador de acordo com a regra
+        // Adiciona ? ou & dependendo se a URL original já possui parâmetros de query
+        function getFormattedSponsorUrl(baseLink, campaignId) {
+            let finalUrl = baseLink;
+            
+            // Verifica se é o link padrão de pagamento
+            if (finalUrl.includes("pagamento.grupobhds.com/metalike/patrocinador")) {
+                const separator = finalUrl.includes('?') ? '&' : '?';
+                finalUrl = `${finalUrl}${separator}id=${campaignId}`;
+            } else {
+                // Se for outra URL qualquer, aplica a tag de rastreio ?src=...
+                const separator = finalUrl.includes('?') ? '&' : '?';
+                finalUrl = `${finalUrl}${separator}src=patrocinador-id${campaignId}`;
+            }
+            
+            return finalUrl;
+        }
+
+        sponsorBox.addEventListener("click", () => {
+            if (!isDemoEnvironment && CONFIG.BACKEND_BASE_URL.includes('onrender.com')) {
+                // Ideia B: Avisa o backend do clique com o nome do patrocinador
+                const safeName = encodeURIComponent(currentSponsorName);
+                fetch(`${CONFIG.BACKEND_BASE_URL}/api/sponsor-click/${CAMPAIGN_ID}?name=${safeName}`).catch(e => console.log(e));
+            }
+            
+            // Formata a URL respeitando ? e & e abre
+            const finalUrlToOpen = getFormattedSponsorUrl(sponsorUrlToOpen, CAMPAIGN_ID);
+            window.open(finalUrlToOpen, "_blank");
+        });
+
+        function handleManualCheck() {
+            if (manualChecksCounter >= MAX_MANUAL_CHECKS) return;
+            
+            manualChecksCounter++;
+            checkLikes();
+
+            if (manualChecksCounter >= MAX_MANUAL_CHECKS) {
+                btnCheckAgain.innerText = "Limite atingido";
+                btnCheckAgain.disabled = true;
+                btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
+            }
+        }
+
+        // SCROLL INTELIGENTE
+        // Esta função calcula a posição correta, descontando 30px pro topo não colar na tela.
+        function executeIntelligentScroll() {
+            if (initialScrollDone || !sponsorWrapper) return;
+            initialScrollDone = true;
+            
+            setTimeout(() => {
+                const yOffset = -30; 
+                const y = sponsorWrapper.getBoundingClientRect().top + window.scrollY + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }, 500); // Aguarda a imagem renderizar para o cálculo ser exato
+        }
+
+        // RENDERIZAR PATROCINADOR
+        function renderSponsor(sponsor) {
+            if (!sponsor) return;
+            
+            sponsorUrlToOpen = sponsor.link || "https://pagamento.grupobhds.com/metalike/patrocinador";
+            currentSponsorName = sponsor.nome || "Padrão";
+            
+            const isImage = sponsor.conteudo.toLowerCase().startsWith('http');
+            let mainContentHTML = '';
+
+            // OTIMIZAÇÃO DE IMAGEM 500x500
+            if (isImage) {
+                mainContentHTML = `
+                <div class="sponsor-image-box">
+                    <img src="${sponsor.conteudo}" alt="Patrocinador" class="w-full h-full object-cover rounded-2xl shadow-sm border border-gray-100">
+                </div>`;
+            } else {
+                mainContentHTML = `<p class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed font-medium break-words px-2">${sponsor.conteudo}</p>`;
+            }
+
+            const titleHTML = sponsor.nome ? `<h3 class="text-[#20192A] font-extrabold text-lg sm:text-xl mb-3 mt-1 leading-tight px-2">${sponsor.nome}</h3>` : `<div class="mt-2"></div>`;
+
+            sponsorContent.innerHTML = `
+                ${titleHTML}
+                ${mainContentHTML}
+                <button class="w-full bg-[#20192A] text-white text-base sm:text-lg font-bold py-3 sm:py-3.5 px-6 rounded-full mt-1">
+                    Acessar patrocinador
+                </button>
+            `;
+        }
+
+        // LÓGICA DE ROTAÇÃO A CADA 30 MIN
+        function startSponsorRotation(sponsorsArray) {
+            if (!sponsorsArray || sponsorsArray.length === 0) return;
+            currentSponsorsList = sponsorsArray;
+
+            // Escolhe o primeiro aleatoriamente
+            activeSponsorIndex = Math.floor(Math.random() * currentSponsorsList.length);
+            renderSponsor(currentSponsorsList[activeSponsorIndex]);
+
+            // Garante que o scroll aconteça APÓS o patrocinador inicial estar montado
+            executeIntelligentScroll();
+
+            if (rotationInterval) clearInterval(rotationInterval);
+
+            // A cada 30 minutos (1.800.000 ms)
+            rotationInterval = setInterval(() => {
+                if (currentSponsorsList.length > 1) {
+                    let nextIndex;
+                    // Nunca repete o mesmo anúncio 2 vezes seguidas
+                    do {
+                        nextIndex = Math.floor(Math.random() * currentSponsorsList.length);
+                    } while (nextIndex === activeSponsorIndex);
+                    
+                    activeSponsorIndex = nextIndex;
+                    renderSponsor(currentSponsorsList[activeSponsorIndex]);
+                }
+            }, 30 * 60 * 1000); 
+        }
 
         async function checkLikes() {
+            if (stopChecking) return; 
             setLoading(true);
 
-            // MODO DEMO AUTOMÁTICO: Funciona perfeitamente no sandbox sem tocar no código
-            if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui') || isDemoEnvironment) {
+            if (CONFIG.BACKEND_BASE_URL.includes('metalike-grupobhds') || isDemoEnvironment) {
                 setTimeout(() => {
                     updateUI({
-                        currentLikes: 15, // Modifique para 25 se quiser testar a vitória visualmente
+                        currentLikes: 15,
                         targetLikes: 25,
                         goalReached: false,
-                        liveUrl: "https://www.youtube.com/"
+                        liveUrl: "https://www.youtube.com/",
+                        // Simulando array de patrocinadores
+                        sponsors: [] 
                     });
                     
-                    if(CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui')) {
-                        elStatusText.innerText = "⚠️ MODO DEMO: Backend não configurado. Exibindo dados de teste.";
+                    if(CONFIG.BACKEND_BASE_URL.includes('metalike-grupobhds')) {
+                        elStatusText.innerText = "⚠️ MODO DEMO: Backend não configurado.";
                     } else {
-                        elStatusText.innerText = `⚠️ MODO DEMO: Sandbox/Local detectado. Campanha ID: ${CAMPAIGN_ID}`;
+                        elStatusText.innerText = `⚠️ MODO DEMO: ID da campanha: ${CAMPAIGN_ID}`;
                     }
                     
                     elStatusText.classList.add("text-[#FD0000]");
                     setLoading(false);
+                    executeIntelligentScroll(); // Caso não haja patrocinadores, faz o scroll mesmo assim
                 }, 800);
                 return;
             }
@@ -161,7 +368,7 @@
                 const response = await fetch(urlStatus);
                 
                 if (!response.ok && response.status !== 404 && response.status !== 500) {
-                     throw new Error('Falha na comunicação com o servidor.');
+                     throw new Error('Falha de comunicação com o Render.');
                 }
 
                 const data = await response.json();
@@ -169,20 +376,22 @@
                 if (data.success) {
                     updateUI(data);
                 } else {
-                    elStatusText.innerText = "Erro: " + data.message;
+                    elStatusText.innerText = "Ops: " + data.message;
                     elStatusText.classList.add("text-[#FD0000]");
+                    executeIntelligentScroll();
                 }
             } catch (error) {
                 console.error(error);
-                elStatusText.innerText = "Erro ao conectar com o sistema de verificação.";
+                elStatusText.innerText = "Sistema fora do ar. Tente de novo em instantes.";
                 elStatusText.classList.add("text-[#FD0000]");
+                executeIntelligentScroll();
             } finally {
                 setLoading(false);
             }
         }
 
         function updateUI(data) {
-            const { currentLikes, targetLikes, goalReached, liveUrl } = data;
+            const { currentLikes, targetLikes, goalReached, liveUrl, sponsors } = data;
 
             elLikesCount.innerText = currentLikes;
             elTargetCount.innerText = targetLikes;
@@ -191,15 +400,25 @@
             if (percentage > 100) percentage = 100;
             elProgressBar.style.width = `${percentage}%`;
 
+            // INICIA A ROTAÇÃO DE PATROCINADORES (Apenas na primeira vez)
+            if (sponsors && sponsors.length > 0 && currentSponsorsList.length === 0) {
+                startSponsorRotation(sponsors);
+            } else if (!sponsors || sponsors.length === 0) {
+                // Se a planilha estiver vazia, chama o scroll da mesma forma pro anúncio padrão
+                executeIntelligentScroll();
+            }
+
             if (goalReached) {
+                stopChecking = true; 
+
                 if (!alreadyCelebrated) {
                     dispararConfetes();
                     alreadyCelebrated = true;
                 }
 
-                elStatusText.innerText = "Meta atingida! O seu link está pronto.";
+                elStatusText.innerText = "Boaaa! A meta bateu, link liberado.";
                 elStatusText.classList.remove("text-[#FD0000]");
-                elMissingText.innerText = "Acesso libertado! Clique no botão abaixo.";
+                elMissingText.innerText = "Tudo certo. É só clicar no botão abaixo!";
                 
                 elProgressBar.classList.replace("bg-[#FD0000]", "bg-green-500");
                 elLikesCount.classList.replace("text-[#FD0000]", "text-green-500");
@@ -209,25 +428,30 @@
                 
                 btnCheckAgain.classList.add("hidden");
                 btnAction.classList.remove("hidden");
-                btnAction.innerText = "Aceder ao Download";
-                btnAction.classList.remove("animate-pulse-btn", "bg-[#FD0000]", "hover:bg-[#d40000]");
-                btnAction.classList.add("bg-green-500", "hover:bg-green-600", "hover:scale-105");
                 
-                // Redirecionamento HTTP 302 direto no backend usando o ID capturado
-                btnAction.href = `${CONFIG.BACKEND_BASE_URL}/api/download/${CAMPAIGN_ID}`;
-                btnAction.target = "_self";
+                btnAction.innerText = "Acessar download"; 
+                btnAction.classList.remove("animate-pulse-btn", "bg-[#FD0000]");
+                btnAction.classList.add("bg-green-500", "hover:scale-105");
+                
+                downloadUrlToOpen = `${CONFIG.BACKEND_BASE_URL}/api/download/${CAMPAIGN_ID}`;
+                liveUrlToOpen = ""; 
 
             } else {
                 const missing = targetLikes - currentLikes;
-                elStatusText.innerText = "A meta ainda não foi atingida. Deixe o seu like na live!";
+                elStatusText.innerText = "Falta pouco! Vai lá e deixa o like.";
                 elStatusText.classList.remove("text-[#FD0000]");
-                elMissingText.innerText = `Falta${missing > 1 ? 'm' : ''} ${missing} like${missing > 1 ? 's' : ''} para libertar o conteúdo.`;
+                elMissingText.innerText = `Contribua agora! Falta apenas ${missing} like${missing > 1 ? 's' : ''} para liberar!`;
                 
                 btnAction.classList.remove("hidden");
                 btnAction.classList.add("animate-pulse-btn");
                 btnAction.innerText = "Contribuir com o MetaLike";
-                btnAction.href = liveUrl;
-                btnAction.target = "_blank";
+                
+                if (manualChecksCounter < MAX_MANUAL_CHECKS) {
+                    btnCheckAgain.classList.remove("hidden");
+                }
+                
+                liveUrlToOpen = liveUrl;
+                downloadUrlToOpen = "";
             }
         }
 
@@ -248,16 +472,17 @@
                 btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
                 loadingIndicator.classList.remove("hidden");
             } else {
-                btnCheckAgain.disabled = false;
-                btnCheckAgain.classList.remove("opacity-50", "cursor-not-allowed");
+                if (manualChecksCounter < MAX_MANUAL_CHECKS) {
+                    btnCheckAgain.disabled = false;
+                    btnCheckAgain.classList.remove("opacity-50", "cursor-not-allowed");
+                }
                 loadingIndicator.classList.add("hidden");
             }
         }
 
-        // Page Visibility API
         document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible") {
-                elStatusText.innerText = "A atualizar verificação de likes...";
+            if (document.visibilityState === "visible" && !stopChecking) {
+                elStatusText.innerText = "Atualizando os likes rapidinho...";
                 setTimeout(checkLikes, 1500); 
             }
         });
