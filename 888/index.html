@@ -66,7 +66,7 @@
         /* Previne cortes e garante proporção 1:1 exata na imagem do patrocinador */
         .sponsor-image-box {
             width: 100%;
-            max-width: 240px; /* Limite seguro para mobile e desktop */
+            max-width: 240px; 
             aspect-ratio: 1 / 1;
             margin: 0 auto 16px auto;
             display: flex;
@@ -162,13 +162,39 @@
 
         let CAMPAIGN_ID = window.location.pathname.split('/').filter(Boolean).pop();
 
-        const isDemoEnvironment = window.location.hostname.includes('usercontent.goog') || 
+        // Checa não apenas o hostname, mas também a URL inteira para funcionar com blob:
+        const isDemoEnvironment = window.location.href.includes('usercontent.goog') || 
+                                  window.location.href.includes('blob:') ||
                                   window.location.hostname === 'localhost' || 
                                   !CAMPAIGN_ID || 
                                   CAMPAIGN_ID.includes('.html');
 
         if (isDemoEnvironment) {
             CAMPAIGN_ID = 'demo_123';
+        }
+
+        // ==========================================
+        // LÓGICA DE BLOQUEIO DE 24 HORAS (LOCALSTORAGE)
+        // ==========================================
+        const MAX_MANUAL_CHECKS = 3;
+        const BLOCK_TIME_MS = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
+        const STORAGE_KEY = `metalike_checks_${CAMPAIGN_ID}`;
+
+        function getStorageData() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                // Se já se passaram 24h desde o primeiro clique daquele ciclo, reseta.
+                if (Date.now() - parsed.timestamp > BLOCK_TIME_MS) {
+                    return { count: 0, timestamp: Date.now() };
+                }
+                return parsed;
+            }
+            return { count: 0, timestamp: Date.now() };
+        }
+
+        function saveStorageData(count, timestamp) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ count, timestamp }));
         }
 
         const elLikesCount = document.getElementById('likesCount');
@@ -187,9 +213,7 @@
 
         let alreadyCelebrated = false;
         let stopChecking = false; 
-
-        let manualChecksCounter = 0;
-        const MAX_MANUAL_CHECKS = 3;
+        let isChecking = false; // Trava anti-spam para cliques múltiplos rápidos
 
         let liveUrlToOpen = "";
         let downloadUrlToOpen = "";
@@ -201,7 +225,7 @@
         let currentSponsorName = "Padrão";
         let sponsorUrlToOpen = "https://pagamento.grupobhds.com/metalike/patrocinador";
         
-        let initialScrollDone = false; // Controle de Scroll Inteligente
+        let initialScrollDone = false; 
 
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -219,51 +243,40 @@
             }
         });
 
-        // Função responsável por formatar a URL do patrocinador de acordo com a regra
-        // Adiciona ? ou & dependendo se a URL original já possui parâmetros de query
         function getFormattedSponsorUrl(baseLink, campaignId) {
             let finalUrl = baseLink;
-            
-            // Verifica se é o link padrão de pagamento
             if (finalUrl.includes("pagamento.grupobhds.com/metalike/patrocinador")) {
                 const separator = finalUrl.includes('?') ? '&' : '?';
                 finalUrl = `${finalUrl}${separator}id=${campaignId}`;
             } else {
-                // Se for outra URL qualquer, aplica a tag de rastreio ?src=...
                 const separator = finalUrl.includes('?') ? '&' : '?';
                 finalUrl = `${finalUrl}${separator}src=patrocinador-id${campaignId}`;
             }
-            
             return finalUrl;
         }
 
         sponsorBox.addEventListener("click", () => {
             if (!isDemoEnvironment && CONFIG.BACKEND_BASE_URL.includes('onrender.com')) {
-                // Ideia B: Avisa o backend do clique com o nome do patrocinador
                 const safeName = encodeURIComponent(currentSponsorName);
-                fetch(`${CONFIG.BACKEND_BASE_URL}/api/sponsor-click/${CAMPAIGN_ID}?name=${safeName}`).catch(e => console.log(e));
+                fetch(`${CONFIG.BACKEND_BASE_URL}/api/sponsor-click/${CAMPAIGN_ID}?name=${safeName}`).catch(e => console.warn("Clique registado localmente."));
             }
-            
-            // Formata a URL respeitando ? e & e abre
             const finalUrlToOpen = getFormattedSponsorUrl(sponsorUrlToOpen, CAMPAIGN_ID);
             window.open(finalUrlToOpen, "_blank");
         });
 
+        // Função executada APENAS quando o usuário clica manualmente no botão "Verificar de novo"
         function handleManualCheck() {
-            if (manualChecksCounter >= MAX_MANUAL_CHECKS) return;
+            if (isChecking) return; 
             
-            manualChecksCounter++;
+            const storage = getStorageData();
+            if (storage.count >= MAX_MANUAL_CHECKS) return;
+            
+            storage.count++;
+            saveStorageData(storage.count, storage.timestamp);
+            
             checkLikes();
-
-            if (manualChecksCounter >= MAX_MANUAL_CHECKS) {
-                btnCheckAgain.innerText = "Limite atingido";
-                btnCheckAgain.disabled = true;
-                btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
-            }
         }
 
-        // SCROLL INTELIGENTE
-        // Esta função calcula a posição correta, descontando 30px pro topo não colar na tela.
         function executeIntelligentScroll() {
             if (initialScrollDone || !sponsorWrapper) return;
             initialScrollDone = true;
@@ -272,10 +285,9 @@
                 const yOffset = -30; 
                 const y = sponsorWrapper.getBoundingClientRect().top + window.scrollY + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
-            }, 500); // Aguarda a imagem renderizar para o cálculo ser exato
+            }, 500); 
         }
 
-        // RENDERIZAR PATROCINADOR
         function renderSponsor(sponsor) {
             if (!sponsor) return;
             
@@ -306,25 +318,20 @@
             `;
         }
 
-        // LÓGICA DE ROTAÇÃO A CADA 30 MIN
         function startSponsorRotation(sponsorsArray) {
             if (!sponsorsArray || sponsorsArray.length === 0) return;
             currentSponsorsList = sponsorsArray;
 
-            // Escolhe o primeiro aleatoriamente
             activeSponsorIndex = Math.floor(Math.random() * currentSponsorsList.length);
             renderSponsor(currentSponsorsList[activeSponsorIndex]);
 
-            // Garante que o scroll aconteça APÓS o patrocinador inicial estar montado
             executeIntelligentScroll();
 
             if (rotationInterval) clearInterval(rotationInterval);
 
-            // A cada 30 minutos (1.800.000 ms)
             rotationInterval = setInterval(() => {
                 if (currentSponsorsList.length > 1) {
                     let nextIndex;
-                    // Nunca repete o mesmo anúncio 2 vezes seguidas
                     do {
                         nextIndex = Math.floor(Math.random() * currentSponsorsList.length);
                     } while (nextIndex === activeSponsorIndex);
@@ -335,30 +342,33 @@
             }, 30 * 60 * 1000); 
         }
 
+        // Função de verificação principal (executada manualmente ou de forma 100% automática)
         async function checkLikes() {
-            if (stopChecking) return; 
+            if (stopChecking || isChecking) return; 
+            
+            isChecking = true; // Bloqueia spam na requisição
             setLoading(true);
 
-            if (CONFIG.BACKEND_BASE_URL.includes('mode-demo') || isDemoEnvironment) {
+            if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui') || isDemoEnvironment) {
                 setTimeout(() => {
                     updateUI({
                         currentLikes: 15,
                         targetLikes: 25,
                         goalReached: false,
                         liveUrl: "https://www.youtube.com/",
-                        // Simulando array de patrocinadores
                         sponsors: [] 
                     });
                     
-                    if(CONFIG.BACKEND_BASE_URL.includes('mode-demo')) {
+                    if(CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui')) {
                         elStatusText.innerText = "⚠️ MODO DEMO: Backend não configurado.";
                     } else {
                         elStatusText.innerText = `⚠️ MODO DEMO: ID da campanha: ${CAMPAIGN_ID}`;
                     }
                     
                     elStatusText.classList.add("text-[#FD0000]");
+                    isChecking = false;
                     setLoading(false);
-                    executeIntelligentScroll(); // Caso não haja patrocinadores, faz o scroll mesmo assim
+                    executeIntelligentScroll(); 
                 }, 800);
                 return;
             }
@@ -367,8 +377,8 @@
                 const urlStatus = `${CONFIG.BACKEND_BASE_URL}/api/likes-status/${CAMPAIGN_ID}`;
                 const response = await fetch(urlStatus);
                 
-                if (!response.ok && response.status !== 404 && response.status !== 500) {
-                     throw new Error('Falha de comunicação com o Render.');
+                if (!response.ok) {
+                     throw new Error('O servidor está a acordar ou ocupado. Aguarde uns instantes.');
                 }
 
                 const data = await response.json();
@@ -381,11 +391,15 @@
                     executeIntelligentScroll();
                 }
             } catch (error) {
-                console.error(error);
-                elStatusText.innerText = "Sistema fora do ar. Tente de novo em instantes.";
+                // Removemos o console.error que assustava para não poluir os logs em falhas de rede esperadas
+                console.warn("Aviso de rede: O servidor pode estar inativo ou a bloquear via CORS.");
+                elStatusText.innerText = error.message && error.message.includes('acordar') 
+                    ? error.message 
+                    : "Sistema fora do ar ou a reiniciar. Tente novamente em 30 segundos.";
                 elStatusText.classList.add("text-[#FD0000]");
                 executeIntelligentScroll();
             } finally {
+                isChecking = false;
                 setLoading(false);
             }
         }
@@ -400,11 +414,9 @@
             if (percentage > 100) percentage = 100;
             elProgressBar.style.width = `${percentage}%`;
 
-            // INICIA A ROTAÇÃO DE PATROCINADORES (Apenas na primeira vez)
             if (sponsors && sponsors.length > 0 && currentSponsorsList.length === 0) {
                 startSponsorRotation(sponsors);
             } else if (!sponsors || sponsors.length === 0) {
-                // Se a planilha estiver vazia, chama o scroll da mesma forma pro anúncio padrão
                 executeIntelligentScroll();
             }
 
@@ -446,12 +458,19 @@
                 btnAction.classList.add("animate-pulse-btn");
                 btnAction.innerText = "Contribuir com o MetaLike";
                 
-                if (manualChecksCounter < MAX_MANUAL_CHECKS) {
-                    btnCheckAgain.classList.remove("hidden");
-                }
-                
                 liveUrlToOpen = liveUrl;
                 downloadUrlToOpen = "";
+                
+                // Exibe o botão de verificação manual se o limite ainda não foi atingido
+                const storage = getStorageData();
+                if (storage.count < MAX_MANUAL_CHECKS) {
+                    btnCheckAgain.classList.remove("hidden");
+                } else {
+                    btnCheckAgain.classList.remove("hidden");
+                    btnCheckAgain.innerText = "Verifique Amanhã";
+                    btnCheckAgain.disabled = true;
+                    btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
+                }
             }
         }
 
@@ -466,27 +485,36 @@
             }());
         }
 
+        // Esta função apenas controla o estado visual de loading, sem impedir o sistema
         function setLoading(isLoading) {
             if (isLoading) {
                 btnCheckAgain.disabled = true;
                 btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
                 loadingIndicator.classList.remove("hidden");
             } else {
-                if (manualChecksCounter < MAX_MANUAL_CHECKS) {
+                const storage = getStorageData();
+                if (storage.count < MAX_MANUAL_CHECKS) {
                     btnCheckAgain.disabled = false;
                     btnCheckAgain.classList.remove("opacity-50", "cursor-not-allowed");
+                } else {
+                    btnCheckAgain.innerText = "Verifique Amanhã";
+                    btnCheckAgain.disabled = true;
+                    btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
                 }
                 loadingIndicator.classList.add("hidden");
             }
         }
 
+        // As verificações automáticas abaixo NUNCA acionam o `handleManualCheck()`, 
+        // portanto, NUNCA sofrem bloqueio do contador de 3 vezes!
         document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible" && !stopChecking) {
+            if (document.visibilityState === "visible" && !stopChecking && !isChecking) {
                 elStatusText.innerText = "Atualizando os likes rapidinho...";
                 setTimeout(checkLikes, 1500); 
             }
         });
 
+        // Verificação automática inicial
         window.onload = checkLikes;
     </script>
 </body>
