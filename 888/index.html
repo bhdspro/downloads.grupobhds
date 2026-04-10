@@ -63,10 +63,9 @@
             z-index: 10;
         }
         
-        /* Previne cortes e garante proporção 1:1 exata na imagem do patrocinador */
+        /* Limite de tamanho removido. A imagem agora expande 100% no card do patrocinador */
         .sponsor-image-box {
             width: 100%;
-            max-width: 240px; 
             aspect-ratio: 1 / 1;
             margin: 0 auto 16px auto;
             display: flex;
@@ -105,7 +104,6 @@
                         <div class="absolute top-0 right-0 bottom-0 w-10 bg-white opacity-25" style="filter: blur(4px);"></div>
                     </div>
                 </div>
-                <!-- TEXTO CENTRALIZADO AQUI -->
                 <p class="text-xs sm:text-sm text-gray-400 mt-3 font-medium text-center" id="missingText">
                     Verificando...
                 </p>
@@ -139,7 +137,6 @@
             <div id="sponsorBox" class="w-full bg-white border-2 border-[#FD0000]/20 rounded-[28px] p-5 sm:p-6 text-center relative overflow-hidden transition-all duration-300 hover:border-[#FD0000]/50 hover:shadow-xl cursor-pointer shine-effect z-10 pt-8 sm:pt-8">
                 
                 <div id="sponsorContent" class="relative z-20 flex flex-col items-center">
-                    <!-- O conteúdo do patrocinador será renderizado aqui -->
                     <h3 class="text-[#20192A] font-extrabold text-lg sm:text-xl mb-2 leading-tight">Destaque sua marca aqui</h3>
                     
                     <p class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed px-2">
@@ -162,7 +159,6 @@
 
         let CAMPAIGN_ID = window.location.pathname.split('/').filter(Boolean).pop();
 
-        // Checa não apenas o hostname, mas também a URL inteira para funcionar com blob:
         const isDemoEnvironment = window.location.href.includes('usercontent.goog') || 
                                   window.location.href.includes('blob:') ||
                                   window.location.hostname === 'localhost' || 
@@ -213,12 +209,11 @@
 
         let alreadyCelebrated = false;
         let stopChecking = false; 
-        let isChecking = false; // Trava anti-spam para cliques múltiplos rápidos
+        let isChecking = false; 
 
         let liveUrlToOpen = "";
         let downloadUrlToOpen = "";
         
-        // ROTAÇÃO DE PATROCINADORES
         let currentSponsorsList = [];
         let activeSponsorIndex = -1;
         let rotationInterval = null;
@@ -264,7 +259,6 @@
             window.open(finalUrlToOpen, "_blank");
         });
 
-        // Função executada APENAS quando o usuário clica manualmente no botão "Verificar de novo"
         function handleManualCheck() {
             if (isChecking) return; 
             
@@ -297,7 +291,7 @@
             const isImage = sponsor.conteudo.toLowerCase().startsWith('http');
             let mainContentHTML = '';
 
-            // OTIMIZAÇÃO DE IMAGEM 500x500
+            // A imagem agora não tem limite de 240px e expande 100% no container
             if (isImage) {
                 mainContentHTML = `
                 <div class="sponsor-image-box">
@@ -313,7 +307,7 @@
                 ${titleHTML}
                 ${mainContentHTML}
                 <button class="w-full bg-[#20192A] text-white text-base sm:text-lg font-bold py-3 sm:py-3.5 px-6 rounded-full mt-1">
-                    Saiba Mais
+                    Saiba mais
                 </button>
             `;
         }
@@ -342,11 +336,10 @@
             }, 30 * 60 * 1000); 
         }
 
-        // Função de verificação principal (executada manualmente ou de forma 100% automática)
         async function checkLikes() {
             if (stopChecking || isChecking) return; 
             
-            isChecking = true; // Bloqueia spam na requisição
+            isChecking = true; 
             setLoading(true);
 
             if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui') || isDemoEnvironment) {
@@ -391,7 +384,6 @@
                     executeIntelligentScroll();
                 }
             } catch (error) {
-                // Removemos o console.error que assustava para não poluir os logs em falhas de rede esperadas
                 console.warn("Aviso de rede: O servidor pode estar inativo ou a bloquear via CORS.");
                 elStatusText.innerText = error.message && error.message.includes('acordar') 
                     ? error.message 
@@ -461,13 +453,12 @@
                 liveUrlToOpen = liveUrl;
                 downloadUrlToOpen = "";
                 
-                // Exibe o botão de verificação manual se o limite ainda não foi atingido
                 const storage = getStorageData();
                 if (storage.count < MAX_MANUAL_CHECKS) {
                     btnCheckAgain.classList.remove("hidden");
                 } else {
                     btnCheckAgain.classList.remove("hidden");
-                    btnCheckAgain.innerText = "Verifique Amanhã";
+                    btnCheckAgain.innerText = "Tente novamente amanhã";
                     btnCheckAgain.disabled = true;
                     btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
                 }
@@ -485,7 +476,6 @@
             }());
         }
 
-        // Esta função apenas controla o estado visual de loading, sem impedir o sistema
         function setLoading(isLoading) {
             if (isLoading) {
                 btnCheckAgain.disabled = true;
@@ -497,7 +487,7 @@
                     btnCheckAgain.disabled = false;
                     btnCheckAgain.classList.remove("opacity-50", "cursor-not-allowed");
                 } else {
-                    btnCheckAgain.innerText = "Verifique Amanhã";
+                    btnCheckAgain.innerText = "Tente novamente amanhã";
                     btnCheckAgain.disabled = true;
                     btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
                 }
@@ -505,8 +495,6 @@
             }
         }
 
-        // As verificações automáticas abaixo NUNCA acionam o `handleManualCheck()`, 
-        // portanto, NUNCA sofrem bloqueio do contador de 3 vezes!
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible" && !stopChecking && !isChecking) {
                 elStatusText.innerText = "Atualizando os likes rapidinho...";
@@ -514,7 +502,6 @@
             }
         });
 
-        // Verificação automática inicial
         window.onload = checkLikes;
     </script>
 </body>
