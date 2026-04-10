@@ -79,8 +79,22 @@
     <!-- Campo oculto usado pela extensão para avisar que foi instalada -->
     <input type="hidden" id="bhds-install-detector" value="waiting">
 
-    <!-- Card Central Escuro -->
-    <main class="w-full max-w-3xl bg-cardDark rounded-3xl shadow-2xl overflow-hidden border border-gray-800 mt-4">
+    <!-- Aviso para Celulares (Exibido apenas em dispositivos móveis) -->
+    <div id="mobile-warning" class="hidden w-full max-w-2xl bg-cardDark border border-brandRed/50 rounded-3xl p-8 md:p-12 text-center shadow-[0_0_30px_rgba(253,0,0,0.15)] mt-10">
+        <div class="flex justify-center mb-6">
+            <div class="p-5 bg-brandRed/10 rounded-full">
+                <i data-lucide="smartphone" class="w-16 h-16 text-brandRed"></i>
+            </div>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Acesso pelo Celular</h2>
+        <p class="text-textLight leading-relaxed text-lg">
+            As extensões de navegador não funcionam em celulares. <br><br>
+            Para instalar e utilizar a extensão <strong class="text-brandRed">ID HOTMARKET</strong>, por favor, acesse este mesmo link utilizando um <strong>Computador ou Notebook</strong>.
+        </p>
+    </div>
+
+    <!-- Card Central Escuro (Ocultado se for celular) -->
+    <main id="main-content" class="w-full max-w-3xl bg-cardDark rounded-3xl shadow-2xl overflow-hidden border border-gray-800 mt-4">
         
         <!-- Topo do Card -->
         <div class="p-8 md:p-10 border-b border-gray-700/50 text-center relative overflow-hidden">
@@ -247,8 +261,8 @@
                     Assim que você carregar a pasta no navegador (Passo 4), esta página ficará <strong class="text-green-400">verde</strong> automaticamente. Mantenha esta página aberta!
                 </p>
                 
-                <!-- Botão de emergência caso a pessoa baixe a página localmente e o Chrome bloqueie a detecção -->
-                <button onclick="forceSuccess()" class="mt-4 text-sm text-textGray underline hover:text-white transition-colors">
+                <!-- Botão alterado para apenas recarregar a página -->
+                <button onclick="window.location.reload();" class="mt-4 text-sm text-textGray underline hover:text-white transition-colors">
                     Já carreguei a pasta mas esta tela não mudou
                 </button>
             </div>
@@ -271,15 +285,14 @@
         </div>
     </main>
 
-    <!-- Rodapé -->
-    <footer class="mt-12 text-center text-gray-500 text-sm pb-8">
-        <p>&copy; 2026 Grupo BHDS. Todos os direitos reservados.</p>
-        <p class="mt-1">Página de auxílio para instalação local (Modo Desenvolvedor).</p>
-    </footer>
-
     <!-- Scripts de Lógica da Página -->
     <script>
         let dynamicExtensionUrl = "chrome://extensions/";
+
+        // Lógica de Ocultação em Dispositivos Móveis
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
 
         // Lógica: Mostra tutorial apenas do Sistema Operacional do usuário
         function setupOSSpecifics() {
@@ -319,8 +332,12 @@
                 dynamicExtensionUrl = "about:debugging#/runtime/this-firefox";
             }
 
-            document.getElementById('browser-name').innerText = browserName;
-            document.getElementById('copy-url-text').innerText = dynamicExtensionUrl;
+            const browserNameEl = document.getElementById('browser-name');
+            const copyUrlTextEl = document.getElementById('copy-url-text');
+            
+            if(browserNameEl) browserNameEl.innerText = browserName;
+            if(copyUrlTextEl) copyUrlTextEl.innerText = dynamicExtensionUrl;
+            
             lucide.createIcons();
         }
 
@@ -354,26 +371,49 @@
             }
         }
 
-        // Lógica: Transforma a tela em Verde caso a extensão seja detectada
+        // Lógica: Transforma a tela em Verde
         function forceSuccess() {
-            document.getElementById('final-step-waiting').classList.add('hidden');
-            document.getElementById('final-step-success').classList.remove('hidden');
+            const waitingDiv = document.getElementById('final-step-waiting');
+            const successDiv = document.getElementById('final-step-success');
+            if (waitingDiv) waitingDiv.classList.add('hidden');
+            if (successDiv) successDiv.classList.remove('hidden');
         }
 
-        // Lógica: Fica vigiando o campo escondido para ver se a extensão foi ativada
-        setInterval(() => {
-            const detector = document.getElementById('bhds-install-detector');
-            if (detector && detector.value === 'installed') {
-                forceSuccess();
-                // Reseta o valor para não ficar rodando a função atoa
-                detector.value = 'done';
-            }
-        }, 1000);
-
+        // DETECÇÃO MELHORADA: Usando Evento Customizado e MutationObserver
         document.addEventListener('DOMContentLoaded', () => {
+            // Verifica Celular
+            if (isMobileDevice()) {
+                document.getElementById('main-content').classList.add('hidden');
+                document.getElementById('mobile-warning').classList.remove('hidden');
+                lucide.createIcons();
+                return; // Interrompe o restante se for celular
+            }
+
+            // Continua carregamento normal para Desktop
             setupOSSpecifics();
             setupBrowserSpecifics();
             lucide.createIcons();
+
+            // 1. Escuta Evento Customizado disparado pela extensão de forma instantânea
+            document.addEventListener('bhds-extension-installed', () => {
+                forceSuccess();
+            });
+
+            // 2. Fallback via MutationObserver no input oculto (Sem pesar o navegador)
+            const detector = document.getElementById('bhds-install-detector');
+            if (detector) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === "attributes" && mutation.attributeName === "value") {
+                            if (detector.value === 'installed') {
+                                forceSuccess();
+                                observer.disconnect();
+                            }
+                        }
+                    });
+                });
+                observer.observe(detector, { attributes: true });
+            }
         });
     </script>
 </body>
