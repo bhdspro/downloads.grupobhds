@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Downloads - Grupo BHDS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Biblioteca leve de Confetes -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .progress-transition {
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .m3-shadow {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Animação de Pulsar Suave e Atrativa */
+        @keyframes pulse-soft {
+            0% { transform: scale(1); box-shadow: 0 4px 14px rgba(253, 0, 0, 0.4); }
+            50% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(253, 0, 0, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 4px 14px rgba(253, 0, 0, 0.4); }
+        }
+        
+        .animate-pulse-btn {
+            animation: pulse-soft 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="w-full max-w-md p-6">
+        <div class="bg-[#20192A] text-white rounded-[32px] p-8 m3-shadow flex flex-col items-center text-center relative overflow-hidden">
+            
+            <div class="absolute top-0 left-0 w-full h-2 bg-[#FD0000]" id="topBorder"></div>
+
+            <div class="mb-6 mt-2" id="iconContainer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FD0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="mainIcon">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl font-bold mb-2" id="mainTitle">Meta de Likes</h1>
+            <p class="text-gray-300 text-base mb-8 px-2" id="statusText">
+                A carregar informações da live...
+            </p>
+
+            <div class="w-full mb-8">
+                <div class="flex justify-between items-end mb-3">
+                    <span class="text-4xl font-extrabold text-[#FD0000]" id="likesCount">-</span>
+                    <span class="text-lg text-gray-400 font-medium">/ <span id="targetCount">-</span> likes</span>
+                </div>
+                
+                <div class="w-full h-4 bg-gray-700 rounded-full overflow-hidden relative">
+                    <div id="progressBar" class="h-full bg-[#FD0000] rounded-full progress-transition relative" style="width: 0%;">
+                        <!-- Efeito de brilho na barra de progresso -->
+                        <div class="absolute top-0 right-0 bottom-0 w-10 bg-white opacity-20" style="filter: blur(4px);"></div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-3 font-medium text-left" id="missingText">
+                    A verificar a meta...
+                </p>
+            </div>
+
+            <div class="w-full flex flex-col gap-4">
+                <!-- Botão Dinâmico -->
+                <a id="btnAction" href="#" target="_blank" class="w-full h-14 bg-[#FD0000] text-white font-bold rounded-full flex items-center justify-center transition-all duration-300 shadow-lg text-lg hidden">
+                    Contribuir com a Meta de Likes
+                </a>
+                
+                <!-- Mantive o botão manual como redundância (fallback) caso o utilizador prefira clicar -->
+                <button id="btnCheckAgain" onclick="checkLikes()" class="w-full h-14 bg-transparent border-2 border-gray-600 hover:border-gray-400 text-white font-bold rounded-full flex items-center justify-center transition-colors text-lg">
+                    Verificar Novamente
+                </button>
+            </div>
+
+            <div id="loadingIndicator" class="mt-4 hidden">
+                <svg class="animate-spin h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * ==========================================
+         * CONFIGURAÇÃO DA CAMPANHA NO FRONTEND
+         * ==========================================
+         */
+        const CONFIG = {
+            // URL base do seu servidor no Render (sem a barra no final)
+            // Substitua pelo seu link real do Render para funcionar em produção
+            BACKEND_BASE_URL: 'https://downloads.grupobhds.onrender.com', 
+            
+            // A campanha que esta página HTML está a exibir.
+            CAMPAIGN_ID: '888' 
+        };
+
+        const elLikesCount = document.getElementById('likesCount');
+        const elTargetCount = document.getElementById('targetCount');
+        const elProgressBar = document.getElementById('progressBar');
+        const elMissingText = document.getElementById('missingText');
+        const elStatusText = document.getElementById('statusText');
+        const btnAction = document.getElementById('btnAction');
+        const btnCheckAgain = document.getElementById('btnCheckAgain');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const topBorder = document.getElementById('topBorder');
+        const mainIcon = document.getElementById('mainIcon');
+
+        let alreadyCelebrated = false; // Impede que os confetes repitam a cada verificação
+
+        async function checkLikes() {
+            setLoading(true);
+
+            // MODO DEMO: Impede o erro de "Failed to fetch" na visualização
+            if (CONFIG.BACKEND_BASE_URL.includes('localhost') || CONFIG.BACKEND_BASE_URL.includes('seu-servidor')) {
+                setTimeout(() => {
+                    updateUI({
+                        currentLikes: 15, // Altere para 25 no código para testar o sucesso visualmente
+                        targetLikes: 25,
+                        goalReached: false,
+                        liveUrl: "https://www.youtube.com/"
+                    });
+                    elStatusText.innerText = "⚠️ MODO DEMO: Backend não conectado. Configure o BACKEND_BASE_URL.";
+                    elStatusText.classList.add("text-[#FD0000]");
+                    setLoading(false);
+                }, 800);
+                return;
+            }
+
+            try {
+                const urlStatus = `${CONFIG.BACKEND_BASE_URL}/api/likes-status/${CONFIG.CAMPAIGN_ID}`;
+                const response = await fetch(urlStatus);
+                
+                if (!response.ok && response.status !== 404 && response.status !== 500) {
+                     throw new Error('Falha na comunicação com o servidor.');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUI(data);
+                } else {
+                    elStatusText.innerText = "Erro: " + data.message;
+                    elStatusText.classList.add("text-[#FD0000]");
+                }
+            } catch (error) {
+                console.error(error);
+                elStatusText.innerText = "Erro ao conectar com o sistema de verificação.";
+                elStatusText.classList.add("text-[#FD0000]");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function updateUI(data) {
+            const { currentLikes, targetLikes, goalReached, liveUrl } = data;
+
+            elLikesCount.innerText = currentLikes;
+            elTargetCount.innerText = targetLikes;
+            
+            let percentage = (currentLikes / targetLikes) * 100;
+            if (percentage > 100) percentage = 100;
+            elProgressBar.style.width = `${percentage}%`;
+
+            if (goalReached) {
+                // Confetes (Apenas na primeira vez que atinge 100%)
+                if (!alreadyCelebrated) {
+                    dispararConfetes();
+                    alreadyCelebrated = true;
+                }
+
+                elStatusText.innerText = "Meta atingida! O seu link está pronto.";
+                elStatusText.classList.remove("text-[#FD0000]");
+                elMissingText.innerText = "Acesso libertado! Clique no botão abaixo.";
+                
+                // Alteração de Cores para Sucesso (Verde)
+                elProgressBar.classList.replace("bg-[#FD0000]", "bg-green-500");
+                elLikesCount.classList.replace("text-[#FD0000]", "text-green-500");
+                topBorder.classList.replace("bg-[#FD0000]", "bg-green-500");
+                mainIcon.setAttribute("stroke", "#22c55e"); // Verde do Tailwind
+                
+                // Muda o ícone para um Check
+                mainIcon.innerHTML = `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>`;
+                
+                btnCheckAgain.classList.add("hidden");
+                
+                // Transforma o botão para a ROTA SEGURA DO BACKEND
+                btnAction.classList.remove("hidden");
+                btnAction.innerText = "Aceder ao Download";
+                
+                // Remove o efeito de pulsar e aplica cores de sucesso
+                btnAction.classList.remove("animate-pulse-btn", "bg-[#FD0000]", "hover:bg-[#d40000]");
+                btnAction.classList.add("bg-green-500", "hover:bg-green-600", "hover:scale-105");
+                
+                // O botão agora manda o navegador para a rota de Redirecionamento 302 do backend
+                btnAction.href = `${CONFIG.BACKEND_BASE_URL}/api/download/${CONFIG.CAMPAIGN_ID}`;
+                btnAction.target = "_self";
+
+            } else {
+                const missing = targetLikes - currentLikes;
+                elStatusText.innerText = "A meta ainda não foi atingida. Deixe o seu like na live!";
+                elStatusText.classList.remove("text-[#FD0000]");
+                elMissingText.innerText = `Falta${missing > 1 ? 'm' : ''} ${missing} like${missing > 1 ? 's' : ''} para libertar o conteúdo.`;
+                
+                // Configura o botão para ir para o YouTube com o Pulsar
+                btnAction.classList.remove("hidden");
+                btnAction.classList.add("animate-pulse-btn");
+                btnAction.innerText = "Contribuir com a Meta de Likes";
+                btnAction.href = liveUrl;
+                btnAction.target = "_blank";
+            }
+        }
+
+        // Função para disparar a chuva de confetes
+        function dispararConfetes() {
+            var duration = 3000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#FD0000', '#ffffff', '#20192A']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#FD0000', '#ffffff', '#20192A']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                btnCheckAgain.disabled = true;
+                btnCheckAgain.classList.add("opacity-50", "cursor-not-allowed");
+                loadingIndicator.classList.remove("hidden");
+            } else {
+                btnCheckAgain.disabled = false;
+                btnCheckAgain.classList.remove("opacity-50", "cursor-not-allowed");
+                loadingIndicator.classList.add("hidden");
+            }
+        }
+
+        /**
+         * ==========================================
+         * PAGE VISIBILITY API (Alternativa Inteligente)
+         * ==========================================
+         * Deteta exatamente quando o utilizador volta do separador do YouTube
+         * para a página, e força uma atualização automática sem esgotar o servidor.
+         */
+        document.addEventListener("visibilitychange", () => {
+            // "visible" significa que o utilizador acabou de voltar para o separador deste site
+            if (document.visibilityState === "visible") {
+                console.log("O utilizador voltou à página. A verificar likes novamente...");
+                
+                // Oculta textos e exibe o sinal de loading visualmente enquanto aguarda
+                elStatusText.innerText = "A atualizar verificação de likes...";
+                
+                // Um delay de 1.5s é dado para os servidores do YouTube 
+                // terem tempo hábil de contabilizar o like recém-dado.
+                setTimeout(() => {
+                    checkLikes();
+                }, 1500); 
+            }
+        });
+
+        // Carrega pela primeira vez
+        window.onload = checkLikes;
+
+    </script>
+</body>
+</html>
