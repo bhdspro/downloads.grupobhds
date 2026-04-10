@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta de Likes - Libertação de Download</title>
+    <title>Página de Downloads - Grupo BHDS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -75,7 +75,7 @@
 
             <div class="w-full flex flex-col gap-4">
                 <a id="btnAction" href="#" target="_blank" class="w-full h-14 bg-[#FD0000] text-white font-bold rounded-full flex items-center justify-center transition-all duration-300 shadow-lg text-lg hidden">
-                    Ir para a Live e Deixar o Like
+                    Contribuir com o MetaLike
                 </a>
                 
                 <button id="btnCheckAgain" onclick="checkLikes()" class="w-full h-14 bg-transparent border-2 border-gray-600 hover:border-gray-400 text-white font-bold rounded-full flex items-center justify-center transition-colors text-lg">
@@ -100,11 +100,23 @@
          */
         const CONFIG = {
             // URL base do seu servidor no Render (sem a barra no final)
-            BACKEND_BASE_URL: 'https://seu-servidor-aqui.onrender.com', 
-            
-            // O nome exato que você escreveu na COLUNA A do seu Google Sheets
-            CAMPAIGN_ID: 'video1' 
+            // É a ÚNICA coisa que você precisará configurar no Frontend futuramente.
+            BACKEND_BASE_URL: 'https://downloads-grupobhds.onrender.com' 
         };
+
+        // Extrai automaticamente o ID da campanha pela URL (Ex: .../888 -> '888')
+        let CAMPAIGN_ID = window.location.pathname.split('/').filter(Boolean).pop();
+
+        // Se o host for o sandbox do Canvas, ou localhost, ou a URL estiver vazia na raiz,
+        // geramos um ID de demonstração automaticamente sem precisar preencher nada.
+        const isDemoEnvironment = window.location.hostname.includes('usercontent.goog') || 
+                                  window.location.hostname === 'localhost' || 
+                                  !CAMPAIGN_ID || 
+                                  CAMPAIGN_ID.includes('.html');
+
+        if (isDemoEnvironment) {
+            CAMPAIGN_ID = 'demo_123';
+        }
 
         const elLikesCount = document.getElementById('likesCount');
         const elTargetCount = document.getElementById('targetCount');
@@ -122,10 +134,22 @@
         async function checkLikes() {
             setLoading(true);
 
-            // MODO DEMO: Se não estiver configurado, não quebra a tela
-            if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui')) {
+            // MODO DEMO AUTOMÁTICO: Funciona perfeitamente no sandbox sem tocar no código
+            if (CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui') || isDemoEnvironment) {
                 setTimeout(() => {
-                    elStatusText.innerText = "⚠️ MODO DEMO: Configure a URL do seu backend na linha 116 do HTML.";
+                    updateUI({
+                        currentLikes: 15, // Modifique para 25 se quiser testar a vitória visualmente
+                        targetLikes: 25,
+                        goalReached: false,
+                        liveUrl: "https://www.youtube.com/"
+                    });
+                    
+                    if(CONFIG.BACKEND_BASE_URL.includes('seu-servidor-aqui')) {
+                        elStatusText.innerText = "⚠️ MODO DEMO: Backend não configurado. Exibindo dados de teste.";
+                    } else {
+                        elStatusText.innerText = `⚠️ MODO DEMO: Sandbox/Local detectado. Campanha ID: ${CAMPAIGN_ID}`;
+                    }
+                    
                     elStatusText.classList.add("text-[#FD0000]");
                     setLoading(false);
                 }, 800);
@@ -133,7 +157,7 @@
             }
 
             try {
-                const urlStatus = `${CONFIG.BACKEND_BASE_URL}/api/likes-status/${CONFIG.CAMPAIGN_ID}`;
+                const urlStatus = `${CONFIG.BACKEND_BASE_URL}/api/likes-status/${CAMPAIGN_ID}`;
                 const response = await fetch(urlStatus);
                 
                 if (!response.ok && response.status !== 404 && response.status !== 500) {
@@ -189,8 +213,8 @@
                 btnAction.classList.remove("animate-pulse-btn", "bg-[#FD0000]", "hover:bg-[#d40000]");
                 btnAction.classList.add("bg-green-500", "hover:bg-green-600", "hover:scale-105");
                 
-                // Redirecionamento HTTP 302 direto no backend
-                btnAction.href = `${CONFIG.BACKEND_BASE_URL}/api/download/${CONFIG.CAMPAIGN_ID}`;
+                // Redirecionamento HTTP 302 direto no backend usando o ID capturado
+                btnAction.href = `${CONFIG.BACKEND_BASE_URL}/api/download/${CAMPAIGN_ID}`;
                 btnAction.target = "_self";
 
             } else {
@@ -201,7 +225,7 @@
                 
                 btnAction.classList.remove("hidden");
                 btnAction.classList.add("animate-pulse-btn");
-                btnAction.innerText = "Ir para a Live e Deixar o Like";
+                btnAction.innerText = "Contribuir com o MetaLike";
                 btnAction.href = liveUrl;
                 btnAction.target = "_blank";
             }
